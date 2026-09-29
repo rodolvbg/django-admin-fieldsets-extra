@@ -21,7 +21,10 @@ class AuthorAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
     fieldsets_with_inlines = [
         (None, {"fields": ["name"]}),
         BookInline,
-        ("Contact", {"fields": ["email", "phone"]}),
+        ("Contact", {"fields": ["email", "phone"], "save_button": True}),
         ArticleInline,
-        ("Biography", {"fields": ["bio"], "classes": ["collapse"]}),
+        (
+            "Biography",
+            {"fields": ["bio"], "classes": ["collapse"], "save_button": True},
+        ),
     ]

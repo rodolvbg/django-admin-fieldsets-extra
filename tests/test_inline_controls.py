@@ -17,19 +17,16 @@ def test_controls_render_inside_the_layout(admin_client, author):
         < books
         < contact
     )
-    # The savable fieldsets are tagged with their position in get_fieldsets().
-    assert "inline-controls-save inline-controls-fieldset-1" in html
-    assert "inline-controls-save inline-controls-fieldset-2" in html
+    # Fieldset save buttons sit next to the inline's controls.
+    assert html.count("data-fieldset-save ") == 2
+    assert 'id="fieldset-1-container"' in html
 
 
 def test_fieldset_save_uses_the_layout_positions(admin_client, author):
-    url = reverse(
-        "controls_admin:demo_author_inline_controls_fieldset_save",
-        args=[author.pk, 1],
-    )
+    url = reverse("controls_admin:demo_author_fieldset_save", args=[author.pk, 1])
     response = admin_client.post(url, {"email": "a@example.com", "phone": "1"})
 
-    assert b'data-status="saved"' in response.content
+    assert b"fieldset-save-status-saved" in response.content
     author.refresh_from_db()
     assert (author.email, author.name) == ("a@example.com", "Author")
 

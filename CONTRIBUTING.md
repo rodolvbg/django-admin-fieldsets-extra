@@ -7,6 +7,7 @@ With [uv](https://docs.astral.sh/uv/) (recommended):
 ```bash
 uv sync
 uv run playwright install --with-deps chromium
+npm install
 uv run pre-commit install
 ```
 
@@ -41,6 +42,13 @@ Chromium against `live_server`) runs as part of that same `uv run pytest`
 once (see Setup above) and are slower than the rest of the suite;
 everything else under `tests/` is unit/integration-level and doesn't
 touch a browser.
+
+JavaScript (vitest + jsdom):
+
+```bash
+npm test
+npm run coverage
+```
 
 ## Testing with django-admin-inline-controls
 
@@ -94,4 +102,5 @@ django-stubs to resolve model types), not an isolated pre-commit env.
 ## Before opening a PR
 
 - [ ] `uv run pytest`
+- [ ] `npm test`
 - [ ] `uv run pre-commit run --all-files`

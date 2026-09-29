@@ -65,11 +65,8 @@ else:
         fieldsets_with_inlines = [
             (None, {"fields": ["name"]}),
             ControlledBookInline,
-            (
-                "Contact",
-                {"fields": ["email", "phone"], "classes": ["inline-controls-save"]},
-            ),
-            ("Biography", {"fields": ["bio"], "classes": ["inline-controls-save"]}),
+            ("Contact", {"fields": ["email", "phone"], "save_button": True}),
+            ("Biography", {"fields": ["bio"], "save_button": True}),
         ]
 
 

@@ -1,0 +1,7 @@
+{% comment %}
+  Response of the fieldset save endpoint: the fieldset re-rendered with its
+  save bar (status included). The JS swaps in the container.
+{% endcomment %}
+{% block response %}
+  {% include "admin/fieldsets_with_inlines/includes/fieldset.html" %}
+{% endblock response %}

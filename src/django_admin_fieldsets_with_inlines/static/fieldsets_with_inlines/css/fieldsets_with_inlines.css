@@ -1,0 +1,50 @@
+.fieldset-with-save > fieldset.module {
+    margin-bottom: 0;
+}
+
+.fieldset-save-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 30px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--hairline-color, #e8e8e8);
+    font-size: 0.8125rem;
+}
+
+/* Nothing to save while the fieldset is collapsed (Django 5.1+ / 4.2). */
+.fieldset-with-save:has(> fieldset > details:not([open])) > .fieldset-save-bar,
+.fieldset-with-save:has(> fieldset.collapsed) > .fieldset-save-bar {
+    display: none;
+}
+
+.fieldset-save-bar .button {
+    box-sizing: border-box;
+    height: 30px;
+    margin: 0;
+    padding: 0 12px;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.fieldset-save-status {
+    color: var(--body-quiet-color, #666);
+}
+
+.fieldset-save-status-invalid,
+.fieldset-save-status-failed {
+    color: var(--error-fg, #ba2121);
+}
+
+.fieldset-save-errors .errorlist {
+    margin: 10px;
+}
+
+.fieldset-with-save.fieldset-save-loading {
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}

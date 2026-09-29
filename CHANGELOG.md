@@ -15,4 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change form template overriding only Django's `field_sets` and
   `inline_field_sets` blocks, with `layout_fieldset` / `layout_inline`
   blocks.
+- `"save_button": True` on a layout fieldset: a button that saves only its
+  fields, re-rendering the fieldset in place.
 - System checks.

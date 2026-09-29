@@ -39,6 +39,14 @@ def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
                 "fieldset — a (name, {'fields': ...}) pair — or an inline class.",
                 "admin_fieldsets_with_inlines.E002",
             )
+            continue
+        save_button = entry[1].get("save_button", False)
+        if not isinstance(save_button, bool):
+            error(
+                f"'save_button' in '{name}.fieldsets_with_inlines[{index}]' must "
+                "be True or False.",
+                "admin_fieldsets_with_inlines.E004",
+            )
 
     for option in getattr(model_admin, "_fieldsets_with_inlines_conflicts", ()):
         error(

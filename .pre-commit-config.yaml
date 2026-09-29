@@ -15,6 +15,14 @@ repos:
   - id: end-of-file-fixer
   - id: trailing-whitespace
 
+- repo: https://github.com/biomejs/pre-commit
+  rev: d1ce4972fb5ad09afd33b432bca71e8c5dfbb2b5  # frozen: v2.5.6
+  hooks:
+  - id: biome-check
+    additional_dependencies:
+    - '@biomejs/biome@2.3.8'
+    language_version: default
+
 - repo: https://github.com/adamchainz/django-upgrade
   rev: bdcc9646c249f00ec9781751791e7b75b48b3722  # frozen: 1.31.1
   hooks:
