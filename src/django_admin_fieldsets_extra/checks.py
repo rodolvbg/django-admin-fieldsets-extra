@@ -48,6 +48,28 @@ def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
                 "admin_fieldsets_extra.E004",
             )
 
+    from django_admin_fieldsets_extra.mixins import FieldsetsExtraMixin
+
+    hook_overridden = (
+        type(model_admin).get_fieldsets_with_inlines
+        is not FieldsetsExtraMixin.get_fieldsets_with_inlines
+    )
+    if hook_overridden:
+        derived = model_admin._fieldsets_with_inlines_derived
+        for option in ("fieldsets", "inlines"):
+            if getattr(model_admin, option) and option not in derived:
+                errors.append(
+                    checks.Warning(
+                        f"'{name}' overrides 'get_fieldsets_with_inlines()' and "
+                        f"also sets '{option}', which is ignored whenever that "
+                        "method returns a layout.",
+                        hint=f"Remove '{option}', or return it from "
+                        "get_fieldsets_with_inlines() when there is no layout.",
+                        obj=type(model_admin),
+                        id="admin_fieldsets_extra.W001",
+                    )
+                )
+
     for option in getattr(model_admin, "_fieldsets_with_inlines_conflicts", ()):
         error(
             f"'{name}' sets both 'fieldsets_with_inlines' and '{option}'; "

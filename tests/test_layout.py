@@ -233,3 +233,44 @@ def test_layout_with_more_fieldsets_than_the_form(admin_user, rf, author):
 
     items = model_admin.get_layout_items(request, author, adminform, [])
     assert [item.index for item in items] == [0]
+
+
+def hook_admin_ids(**attrs):
+    def get_fieldsets_with_inlines(self, request, obj=None):
+        return [(None, {"fields": ["name"]}), BookInline]
+
+    return ids(get_fieldsets_with_inlines=get_fieldsets_with_inlines, **attrs)
+
+
+@pytest.mark.parametrize(
+    "attrs",
+    [
+        {"fieldsets": [(None, {"fields": ["name"]})]},
+        {"inlines": [BookInline]},
+    ],
+)
+def test_hook_with_static_options_warns(attrs):
+    assert "admin_fieldsets_extra.W001" in hook_admin_ids(**attrs)
+
+
+def test_hook_alone_does_not_warn():
+    assert "admin_fieldsets_extra.W001" not in hook_admin_ids()
+
+
+def test_hook_with_the_layout_attribute_does_not_warn():
+    # fieldsets/inlines were derived from the attribute, not set by hand.
+    assert "admin_fieldsets_extra.W001" not in hook_admin_ids(
+        fieldsets_with_inlines=[(None, {"fields": ["name"]}), BookInline]
+    )
+
+
+def test_inherited_static_options_warn_too():
+    class Base(admin.ModelAdmin):
+        fieldsets = [(None, {"fields": ["name"]})]
+
+    class Admin(FieldsetsExtraMixin, Base):
+        def get_fieldsets_with_inlines(self, request, obj=None):
+            return [(None, {"fields": ["name"]})]
+
+    ids_ = [e.id for e in Admin(Author, admin.AdminSite()).check()]
+    assert "admin_fieldsets_extra.W001" in ids_

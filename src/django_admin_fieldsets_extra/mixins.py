@@ -98,6 +98,7 @@ class FieldsetsExtraMixin:
     )
     fieldset_save_response_template = "admin/fieldsets_extra/fieldset_response.html"
     _fieldsets_with_inlines_conflicts: list[str] = []
+    _fieldsets_with_inlines_derived: frozenset[str] = frozenset()
 
     # Provided by ModelAdmin.
     fieldsets: Any
@@ -119,10 +120,15 @@ class FieldsetsExtraMixin:
             fieldsets, inlines = split_layout(layout)
         except TypeError:  # pragma: no cover - not iterable, reported by E001
             return
+        derived = set()
         if not cls.__dict__.get("fieldsets"):
             cls.fieldsets = fieldsets
+            derived.add("fieldsets")
         if not cls.__dict__.get("inlines"):
             cls.inlines = inlines
+            derived.add("inlines")
+        # Checked by check_fieldsets_with_inlines() (W001).
+        cls._fieldsets_with_inlines_derived = frozenset(derived)
 
     def get_fieldsets_with_inlines(
         self, request: HttpRequest, obj: Any = None

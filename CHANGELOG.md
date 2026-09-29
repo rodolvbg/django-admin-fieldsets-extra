@@ -18,4 +18,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `"save_button": True` on a layout fieldset: a button that saves only its
   fields, re-rendering the fieldset in place.
 - Spanish translation (`locale/es`).
-- System checks.
+- System checks, including a warning when `get_fieldsets_with_inlines()`
+  is overridden while `fieldsets` / `inlines` are set too.

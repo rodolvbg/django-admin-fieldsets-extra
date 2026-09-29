@@ -74,7 +74,9 @@ inline class, as in `ModelAdmin.inlines`. They are rendered in that order.
   order), so Django's admin checks and every hook that reads them keep
   working. Don't set them as well (`admin_fieldsets_extra.E003`).
 - **Dynamic layouts:** override `get_fieldsets_with_inlines(request,
-  obj=None)`; `get_fieldsets()` and `get_inlines()` follow it.
+  obj=None)`; `get_fieldsets()` and `get_inlines()` follow it. Static
+  `fieldsets` / `inlines` would be ignored then
+  (`admin_fieldsets_extra.W001` warns about it).
 - **Permissions:** an inline the user can't see is simply left out, as
   in the regular change form.
 - **Anything not in the layout** (e.g. extra fieldsets or inlines from your
@@ -214,6 +216,7 @@ them.
 | `admin_fieldsets_extra.E002` | An entry is neither a `(name, {"fields": ...})` fieldset nor an inline class. |
 | `admin_fieldsets_extra.E003` | `fieldsets` or `inlines` is set as well. |
 | `admin_fieldsets_extra.E004` | A fieldset's `save_button` is not `True` or `False`. |
+| `admin_fieldsets_extra.W001` | `get_fieldsets_with_inlines()` is overridden and `fieldsets` or `inlines` is set too: they are ignored whenever it returns a layout (warning). |
 
 ## Translations
 
