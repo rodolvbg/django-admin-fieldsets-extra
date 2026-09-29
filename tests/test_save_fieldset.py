@@ -6,8 +6,8 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Permission, User
 from django.urls import clear_url_caches, path, reverse
 
-from django_admin_fieldsets_with_inlines.mixins import (
-    FieldsetsWithInlinesMixin,
+from django_admin_fieldsets_extra.mixins import (
+    FieldsetsExtraMixin,
     django_fieldset,
 )
 
@@ -115,7 +115,7 @@ def custom_site(settings):
     site = admin.AdminSite(name="fieldset_site")
 
     @admin.register(Author, site=site)
-    class AuthorAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+    class AuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
         form = CheckedForm
         readonly_fields = ["bio"]
         fieldsets_with_inlines = [
@@ -167,7 +167,7 @@ def test_unnamed_fieldset_label(admin_client, author, custom_site):
 def test_check_save_button_type():
     admin_class = type(
         "Admin",
-        (FieldsetsWithInlinesMixin, admin.ModelAdmin),
+        (FieldsetsExtraMixin, admin.ModelAdmin),
         {
             "__module__": __name__,
             "fieldsets_with_inlines": [(None, {"fields": ["name"], "save_button": 1})],
@@ -175,4 +175,4 @@ def test_check_save_button_type():
     )
     ids = [e.id for e in admin_class(Author, admin.AdminSite()).check()]
 
-    assert "admin_fieldsets_with_inlines.E004" in ids
+    assert "admin_fieldsets_extra.E004" in ids

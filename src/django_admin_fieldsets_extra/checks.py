@@ -1,4 +1,4 @@
-"""System checks for ``FieldsetsWithInlinesMixin``."""
+"""System checks for ``FieldsetsExtraMixin``."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import Any
 
 from django.core import checks
 
-from django_admin_fieldsets_with_inlines.mixins import is_inline
+from django_admin_fieldsets_extra.mixins import is_inline
 
 
 def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
@@ -21,7 +21,7 @@ def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
     if not isinstance(layout, list | tuple):
         error(
             f"The value of '{name}.fieldsets_with_inlines' must be a list or tuple.",
-            "admin_fieldsets_with_inlines.E001",
+            "admin_fieldsets_extra.E001",
         )
         return errors
 
@@ -37,7 +37,7 @@ def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
             error(
                 f"The value of '{name}.fieldsets_with_inlines[{index}]' must be a "
                 "fieldset — a (name, {'fields': ...}) pair — or an inline class.",
-                "admin_fieldsets_with_inlines.E002",
+                "admin_fieldsets_extra.E002",
             )
             continue
         save_button = entry[1].get("save_button", False)
@@ -45,13 +45,13 @@ def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
             error(
                 f"'save_button' in '{name}.fieldsets_with_inlines[{index}]' must "
                 "be True or False.",
-                "admin_fieldsets_with_inlines.E004",
+                "admin_fieldsets_extra.E004",
             )
 
     for option in getattr(model_admin, "_fieldsets_with_inlines_conflicts", ()):
         error(
             f"'{name}' sets both 'fieldsets_with_inlines' and '{option}'; "
             f"'{option}' is derived from 'fieldsets_with_inlines', remove it.",
-            "admin_fieldsets_with_inlines.E003",
+            "admin_fieldsets_extra.E003",
         )
     return errors

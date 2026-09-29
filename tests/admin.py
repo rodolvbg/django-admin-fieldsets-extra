@@ -3,7 +3,7 @@
 from demo.models import Article, Author, Book
 from django.contrib import admin
 
-from django_admin_fieldsets_with_inlines.mixins import FieldsetsWithInlinesMixin
+from django_admin_fieldsets_extra.mixins import FieldsetsExtraMixin
 
 site = admin.AdminSite(name="test_admin")
 
@@ -28,7 +28,7 @@ class NoPermissionArticleInline(ArticleInline):
 
 
 @admin.register(Author, site=site)
-class DynamicAuthorAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+class DynamicAuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
     """Layout chosen per request; an inline the user can't see."""
 
     def get_fieldsets_with_inlines(self, request, obj=None):
@@ -60,7 +60,7 @@ else:
 
     @admin.register(Author, site=controls_site)
     class ControlledAuthorAdmin(
-        InlineControlsAdminMixin, FieldsetsWithInlinesMixin, admin.ModelAdmin
+        InlineControlsAdminMixin, FieldsetsExtraMixin, admin.ModelAdmin
     ):
         fieldsets_with_inlines = [
             (None, {"fields": ["name"]}),
@@ -71,5 +71,5 @@ else:
 
 
 @admin.register(Book, site=site)
-class PlainBookAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+class PlainBookAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
     """The mixin without a layout: the regular change form."""

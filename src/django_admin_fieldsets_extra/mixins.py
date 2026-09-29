@@ -1,4 +1,4 @@
-"""Interleave fieldsets and inlines in the Django admin change form."""
+"""Extras for Django admin fieldsets: layout with inlines, per-fieldset save."""
 
 from __future__ import annotations
 
@@ -18,15 +18,14 @@ from django.urls import NoReverseMatch, URLPattern, path, reverse
 from django.utils.translation import gettext
 from django.views.decorators.http import require_POST
 
+from django_admin_fieldsets_extra.types import FieldsetSpec, Layout
+
 if TYPE_CHECKING:
     from django.template.response import _TemplateForResponseT
-
-#: One entry of ``fieldsets_with_inlines``: a fieldset, as in
-#: ``ModelAdmin.fieldsets``, or an inline class, as in ``ModelAdmin.inlines``.
-LayoutEntry = tuple[str | None, dict[str, Any]] | type[InlineModelAdmin]
+    from typing_extensions import TypeIs
 
 
-def is_inline(entry: Any) -> bool:
+def is_inline(entry: object) -> TypeIs[type[InlineModelAdmin]]:
     return isinstance(entry, type) and issubclass(entry, InlineModelAdmin)
 
 
@@ -36,8 +35,8 @@ LAYOUT_OPTIONS = frozenset({"save_button"})
 
 
 def django_fieldset(
-    entry: tuple[str | None, dict[str, Any]],
-) -> tuple[str | None, dict[str, Any]]:
+    entry: FieldsetSpec,
+) -> FieldsetSpec:
     """A layout fieldset as Django expects it, without this package's options.
 
     Malformed entries are returned as they are, for the checks to report.
@@ -51,8 +50,8 @@ def django_fieldset(
 
 
 def split_layout(
-    layout: Sequence[Any],
-) -> tuple[list[tuple[str | None, dict[str, Any]]], list[type[InlineModelAdmin]]]:
+    layout: Layout,
+) -> tuple[list[FieldsetSpec], list[type[InlineModelAdmin]]]:
     """The fieldsets (Django-ready) and the inline classes of a layout."""
     fieldsets = [django_fieldset(entry) for entry in layout if not is_inline(entry)]
     inlines = [entry for entry in layout if is_inline(entry)]
@@ -76,11 +75,11 @@ class LayoutItem:
         return self.inline_admin_formset is not None
 
 
-class FieldsetsWithInlinesMixin:
+class FieldsetsExtraMixin:
     """Render inlines between fieldsets, in the order you list them::
 
         @admin.register(Author)
-        class AuthorAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+        class AuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
             fieldsets_with_inlines = [
                 (None, {"fields": ["name"]}),
                 BookInline,
@@ -93,13 +92,11 @@ class FieldsetsWithInlinesMixin:
     ``"save_button": True`` gets a button that saves only its fields.
     """
 
-    fieldsets_with_inlines: Sequence[Any] = ()
+    fieldsets_with_inlines: Layout = ()
     change_form_template: _TemplateForResponseT | None = (
-        "admin/fieldsets_with_inlines/change_form.html"
+        "admin/fieldsets_extra/change_form.html"
     )
-    fieldset_save_response_template = (
-        "admin/fieldsets_with_inlines/fieldset_response.html"
-    )
+    fieldset_save_response_template = "admin/fieldsets_extra/fieldset_response.html"
     _fieldsets_with_inlines_conflicts: list[str] = []
 
     # Provided by ModelAdmin.
@@ -129,7 +126,7 @@ class FieldsetsWithInlinesMixin:
 
     def get_fieldsets_with_inlines(
         self, request: HttpRequest, obj: Any = None
-    ) -> Sequence[Any]:
+    ) -> Layout:
         """The layout for this request. Override to make it dynamic."""
         return self.fieldsets_with_inlines
 
@@ -215,8 +212,8 @@ class FieldsetsWithInlinesMixin:
     @property
     def media(self) -> forms.Media:
         return super().media + forms.Media(  # type: ignore[misc]
-            js=["fieldsets_with_inlines/js/fieldsets_with_inlines.js"],
-            css={"all": ["fieldsets_with_inlines/css/fieldsets_with_inlines.css"]},
+            js=["fieldsets_extra/js/fieldsets_extra.js"],
+            css={"all": ["fieldsets_extra/css/fieldsets_extra.css"]},
         )
 
     def get_urls(self) -> list[URLPattern]:
@@ -328,7 +325,7 @@ class FieldsetsWithInlinesMixin:
         )
 
     def check(self, **kwargs: Any) -> list[Any]:
-        from django_admin_fieldsets_with_inlines.checks import (
+        from django_admin_fieldsets_extra.checks import (
             check_fieldsets_with_inlines,
         )
 
@@ -337,7 +334,7 @@ class FieldsetsWithInlinesMixin:
 
 __all__ = [
     "LAYOUT_OPTIONS",
-    "FieldsetsWithInlinesMixin",
+    "FieldsetsExtraMixin",
     "LayoutItem",
     "django_fieldset",
     "split_layout",

@@ -15,7 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_admin_fieldsets_with_inlines",
+    "django_admin_fieldsets_extra",
     "demo",
 ]
 

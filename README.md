@@ -1,21 +1,22 @@
-# django-admin-fieldsets-with-inlines
+# django-admin-fieldsets-extra
 
-[![Build status](https://github.com/rodolvbg/django-admin-fieldsets-with-inlines/actions/workflows/pytest.yml/badge.svg)](https://github.com/rodolvbg/django-admin-fieldsets-with-inlines/actions/workflows/pytest.yml)
-[![PyPI version](https://img.shields.io/pypi/v/django-admin-fieldsets-with-inlines.svg)](https://pypi.org/project/django-admin-fieldsets-with-inlines/)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-admin-fieldsets-with-inlines)](https://pypi.org/project/django-admin-fieldsets-with-inlines/)
-[![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-admin-fieldsets-with-inlines)](https://pypi.org/project/django-admin-fieldsets-with-inlines/)
-[![Downloads](https://static.pepy.tech/personalized-badge/django-admin-fieldsets-with-inlines?period=month&units=international_system&left_color=black&right_color=blue&left_text=Downloads/month)](https://pepy.tech/project/django-admin-fieldsets-with-inlines)
+[![Build status](https://github.com/rodolvbg/django-admin-fieldsets-extra/actions/workflows/pytest.yml/badge.svg)](https://github.com/rodolvbg/django-admin-fieldsets-extra/actions/workflows/pytest.yml)
+[![PyPI version](https://img.shields.io/pypi/v/django-admin-fieldsets-extra.svg)](https://pypi.org/project/django-admin-fieldsets-extra/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-admin-fieldsets-extra)](https://pypi.org/project/django-admin-fieldsets-extra/)
+[![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-admin-fieldsets-extra)](https://pypi.org/project/django-admin-fieldsets-extra/)
+[![Downloads](https://static.pepy.tech/personalized-badge/django-admin-fieldsets-extra?period=month&units=international_system&left_color=black&right_color=blue&left_text=Downloads/month)](https://pepy.tech/project/django-admin-fieldsets-extra)
 
-Interleave fieldsets and inlines in the Django admin change form: put an
-inline right after the fields it belongs with, instead of always at the
-bottom.
+Extras for Django admin fieldsets:
+
+- **Interleave fieldsets and inlines** in the change form: put an inline
+  right after the fields it belongs with, instead of always at the bottom.
+- **Save a fieldset on its own** with a "Save Contact" button, without
+  submitting or reloading the rest of the page.
 
 ![Books inline between the name and the contact fieldset, articles before the biography](docs/screenshots/hero.png)
 
-- One ordered list replaces `fieldsets` + `inlines`.
-- Optional **"Save Contact" button per fieldset**: saves only that
-  section of the object, without submitting or reloading the rest of the
-  page.
+- One ordered list replaces `fieldsets` + `inlines` (with or without
+  inlines in it).
 - No copy of Django's `change_form.html`: it only overrides its
   `field_sets` / `inline_field_sets` blocks, so it follows your Django
   version.
@@ -27,7 +28,7 @@ bottom.
 ## Install
 
 ```bash
-pip install django-admin-fieldsets-with-inlines
+pip install django-admin-fieldsets-extra
 ```
 
 Add to `INSTALLED_APPS`:
@@ -35,7 +36,7 @@ Add to `INSTALLED_APPS`:
 ```python
 INSTALLED_APPS = [
     ...
-    "django_admin_fieldsets_with_inlines",
+    "django_admin_fieldsets_extra",
 ]
 ```
 
@@ -44,7 +45,7 @@ INSTALLED_APPS = [
 ```python
 from django.contrib import admin
 
-from django_admin_fieldsets_with_inlines.mixins import FieldsetsWithInlinesMixin
+from django_admin_fieldsets_extra.mixins import FieldsetsExtraMixin
 
 
 class BookInline(admin.TabularInline):
@@ -56,7 +57,7 @@ class ArticleInline(admin.StackedInline):
 
 
 @admin.register(Author)
-class AuthorAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+class AuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
     fieldsets_with_inlines = [
         (None, {"fields": ["name"]}),
         BookInline,
@@ -71,7 +72,7 @@ inline class, as in `ModelAdmin.inlines`. They are rendered in that order.
 
 - **`fieldsets` and `inlines` are derived from it** (in their relative
   order), so Django's admin checks and every hook that reads them keep
-  working. Don't set them as well (`admin_fieldsets_with_inlines.E003`).
+  working. Don't set them as well (`admin_fieldsets_extra.E003`).
 - **Dynamic layouts:** override `get_fieldsets_with_inlines(request,
   obj=None)`; `get_fieldsets()` and `get_inlines()` follow it.
 - **Permissions:** an inline the user can't see is simply left out, as
@@ -88,7 +89,7 @@ Add `"save_button": True` to a fieldset of the layout to give it a
 name) that saves only its fields:
 
 ```python
-("Contact", {"fields": ["email", "phone"], "save_button": True}),
+(("Contact", {"fields": ["email", "phone"], "save_button": True}),)
 ```
 
 ![A fieldset with its own save button, after saving](docs/screenshots/save-fieldset.png)
@@ -114,7 +115,7 @@ fieldset reaches Django (whose `Fieldset` rejects unknown options), so
   fields, form-wide errors (from `clean()`) above the fieldset, "Saved."
   next to the button on success. The rest of the page (other fieldsets,
   inlines, unsaved edits) is left untouched. A
-  `fieldsets-with-inlines:saved` event bubbles from the new fieldset.
+  `fieldsets-extra:saved` event bubbles from the new fieldset.
 
 **Caveats**
 
@@ -136,12 +137,12 @@ fieldset reaches Django (whose `Fieldset` rejects unknown options), so
 ## Customizing the template
 
 The mixin sets `change_form_template` to
-`admin/fieldsets_with_inlines/change_form.html`, which extends
+`admin/fieldsets_extra/change_form.html`, which extends
 `admin/change_form.html`. For your own change form template, extend this
 one instead:
 
 ```django
-{% extends "admin/fieldsets_with_inlines/change_form.html" %}
+{% extends "admin/fieldsets_extra/change_form.html" %}
 
 {% block layout_inline %}
   <div class="my-inline">{{ block.super }}</div>
@@ -151,11 +152,11 @@ one instead:
 | Block | Contains |
 |---|---|
 | `field_sets` | The whole layout (falls back to Django's when there is none). |
-| `layout_fieldset` | One fieldset (`fieldset`, and `item.index`, its position in `get_fieldsets()`); includes `admin/fieldsets_with_inlines/includes/fieldset.html`. |
+| `layout_fieldset` | One fieldset (`fieldset`, and `item.index`, its position in `get_fieldsets()`); includes `admin/fieldsets_extra/includes/fieldset.html`. |
 | `layout_inline` | One inline (`inline_admin_formset`). |
 | `inline_field_sets` | Empty when there is a layout (the inlines are already rendered). |
 
-`admin/fieldsets_with_inlines/includes/fieldset.html` renders one fieldset
+`admin/fieldsets_extra/includes/fieldset.html` renders one fieldset
 and, if it has one, its save button. Its blocks: `non_field_errors`,
 `fieldset`, `save_bar` and `save_label`. It is also the save endpoint's
 response (`fieldset_response.html`, block `response`; set
@@ -188,9 +189,7 @@ class BookInline(InlineControlsMixin, admin.TabularInline):
 
 
 @admin.register(Author)
-class AuthorAdmin(
-    InlineControlsAdminMixin, FieldsetsWithInlinesMixin, admin.ModelAdmin
-):
+class AuthorAdmin(InlineControlsAdminMixin, FieldsetsExtraMixin, admin.ModelAdmin):
     fieldsets_with_inlines = [
         (None, {"fields": ["name"]}),
         BookInline,
@@ -211,10 +210,10 @@ them.
 
 | ID | Problem |
 |---|---|
-| `admin_fieldsets_with_inlines.E001` | `fieldsets_with_inlines` is not a list or tuple. |
-| `admin_fieldsets_with_inlines.E002` | An entry is neither a `(name, {"fields": ...})` fieldset nor an inline class. |
-| `admin_fieldsets_with_inlines.E003` | `fieldsets` or `inlines` is set as well. |
-| `admin_fieldsets_with_inlines.E004` | A fieldset's `save_button` is not `True` or `False`. |
+| `admin_fieldsets_extra.E001` | `fieldsets_with_inlines` is not a list or tuple. |
+| `admin_fieldsets_extra.E002` | An entry is neither a `(name, {"fields": ...})` fieldset nor an inline class. |
+| `admin_fieldsets_extra.E003` | `fieldsets` or `inlines` is set as well. |
+| `admin_fieldsets_extra.E004` | A fieldset's `save_button` is not `True` or `False`. |
 
 ## Demo
 

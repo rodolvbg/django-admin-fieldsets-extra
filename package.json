@@ -1,8 +1,8 @@
 {
-    "name": "django-admin-fieldsets-with-inlines",
+    "name": "django-admin-fieldsets-extra",
     "private": true,
     "type": "module",
-    "description": "JS test tooling for django-admin-fieldsets-with-inlines",
+    "description": "JS test tooling for django-admin-fieldsets-extra",
     "scripts": {
         "test": "vitest run",
         "test:watch": "vitest",

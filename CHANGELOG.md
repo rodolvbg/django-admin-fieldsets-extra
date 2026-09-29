@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `FieldsetsWithInlinesMixin`: `fieldsets_with_inlines` renders fieldsets
+- `FieldsetsExtraMixin`: `fieldsets_with_inlines` renders fieldsets
   and inlines interleaved, deriving `fieldsets` and `inlines`;
   `get_fieldsets_with_inlines()` for dynamic layouts.
 - Change form template overriding only Django's `field_sets` and

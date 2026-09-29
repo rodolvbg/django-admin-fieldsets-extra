@@ -462,7 +462,7 @@ wheels = [
 ]
 
 [[package]]
-name = "django-admin-fieldsets-with-inlines"
+name = "django-admin-fieldsets-extra"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

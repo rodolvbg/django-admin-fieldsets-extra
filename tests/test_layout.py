@@ -6,8 +6,8 @@ from demo.models import Author
 from django.contrib import admin
 from django.urls import reverse
 
-from django_admin_fieldsets_with_inlines.mixins import (
-    FieldsetsWithInlinesMixin,
+from django_admin_fieldsets_extra.mixins import (
+    FieldsetsExtraMixin,
     split_layout,
 )
 
@@ -104,7 +104,7 @@ def test_dynamic_layout_and_hidden_inline(admin_client, author):
 
 
 def test_unlisted_fieldsets_and_inlines_are_appended(admin_user, rf, author):
-    class Admin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+    class Admin(FieldsetsExtraMixin, admin.ModelAdmin):
         fieldsets_with_inlines = [BookInline]
 
         def get_fieldsets(self, request, obj=None):
@@ -138,7 +138,7 @@ def test_unlisted_fieldsets_and_inlines_are_appended(admin_user, rf, author):
 
 
 def test_without_a_layout_it_is_a_plain_model_admin(admin_client, author, rf):
-    class Admin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+    class Admin(FieldsetsExtraMixin, admin.ModelAdmin):
         inlines = [BookInline]
 
     model_admin = Admin(Author, admin.AdminSite())
@@ -161,7 +161,7 @@ def test_split_layout():
 def ids(**attrs):
     admin_class = type(
         "Admin",
-        (FieldsetsWithInlinesMixin, admin.ModelAdmin),
+        (FieldsetsExtraMixin, admin.ModelAdmin),
         {"__module__": __name__, **attrs},
     )
     return [error.id for error in admin_class(Author, admin.AdminSite()).check()]
@@ -174,23 +174,23 @@ def test_valid_layout_has_no_errors():
 @pytest.mark.parametrize(
     ("attrs", "error_id"),
     [
-        ({"fieldsets_with_inlines": "name"}, "admin_fieldsets_with_inlines.E001"),
-        ({"fieldsets_with_inlines": [("x",)]}, "admin_fieldsets_with_inlines.E002"),
-        ({"fieldsets_with_inlines": [("x", {})]}, "admin_fieldsets_with_inlines.E002"),
-        ({"fieldsets_with_inlines": [object]}, "admin_fieldsets_with_inlines.E002"),
+        ({"fieldsets_with_inlines": "name"}, "admin_fieldsets_extra.E001"),
+        ({"fieldsets_with_inlines": [("x",)]}, "admin_fieldsets_extra.E002"),
+        ({"fieldsets_with_inlines": [("x", {})]}, "admin_fieldsets_extra.E002"),
+        ({"fieldsets_with_inlines": [object]}, "admin_fieldsets_extra.E002"),
         (
             {
                 "fieldsets_with_inlines": [(None, {"fields": ["name"]})],
                 "fieldsets": [(None, {"fields": ["name"]})],
             },
-            "admin_fieldsets_with_inlines.E003",
+            "admin_fieldsets_extra.E003",
         ),
         (
             {
                 "fieldsets_with_inlines": [(None, {"fields": ["name"]})],
                 "inlines": [BookInline],
             },
-            "admin_fieldsets_with_inlines.E003",
+            "admin_fieldsets_extra.E003",
         ),
     ],
 )
@@ -216,7 +216,7 @@ def test_mixin_without_layout_renders_the_regular_form(admin_client, author):
 
 
 def test_layout_with_more_fieldsets_than_the_form(admin_user, rf, author):
-    class Admin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+    class Admin(FieldsetsExtraMixin, admin.ModelAdmin):
         fieldsets_with_inlines = [
             (None, {"fields": ["name"]}),
             ("Gone", {"fields": ["email"]}),

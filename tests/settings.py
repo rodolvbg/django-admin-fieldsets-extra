@@ -12,7 +12,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_admin_fieldsets_with_inlines",
+    "django_admin_fieldsets_extra",
     "demo",
 ]
 # Integration tests run when django-admin-inline-controls is installed.
@@ -43,9 +43,7 @@ TEMPLATES = [
 # Files, not ":memory:": pytest-django's live_server shares one connection
 # across its threads when the database looks in-memory, and concurrent
 # browser requests in the e2e tests would then use it at once.
-_DB_BASE = (
-    Path(tempfile.gettempdir()) / f"django-admin-fieldsets-with-inlines-{os.getpid()}"
-)
+_DB_BASE = Path(tempfile.gettempdir()) / f"django-admin-fieldsets-extra-{os.getpid()}"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",

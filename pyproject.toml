@@ -3,9 +3,9 @@ build-backend = "hatchling.build"
 requires = [ "hatchling" ]
 
 [project]
-name = "django-admin-fieldsets-with-inlines"
+name = "django-admin-fieldsets-extra"
 version = "0.1.0"
-description = "Interleave fieldsets and inlines in the Django admin change form."
+description = "Extras for Django admin fieldsets: interleave them with inlines, save one on its own."
 readme = "README.md"
 keywords = [ "admin", "django", "fieldsets", "inlines", "layout" ]
 license = "MIT"
@@ -48,9 +48,9 @@ optional-dependencies.dev = [
   "tox>=4",
   "tox-uv>=1",
 ]
-urls.Homepage = "https://github.com/rodolvbg/django-admin-fieldsets-with-inlines"
-urls.Issues = "https://github.com/rodolvbg/django-admin-fieldsets-with-inlines/issues"
-urls.Repository = "https://github.com/rodolvbg/django-admin-fieldsets-with-inlines"
+urls.Homepage = "https://github.com/rodolvbg/django-admin-fieldsets-extra"
+urls.Issues = "https://github.com/rodolvbg/django-admin-fieldsets-extra/issues"
+urls.Repository = "https://github.com/rodolvbg/django-admin-fieldsets-extra"
 
 [dependency-groups]
 dev = [
@@ -68,7 +68,7 @@ dev = [
 ]
 
 [tool.hatch]
-build.targets.wheel.packages = [ "src/django_admin_fieldsets_with_inlines" ]
+build.targets.wheel.packages = [ "src/django_admin_fieldsets_extra" ]
 
 [tool.ruff]
 target-version = "py310"
@@ -89,12 +89,12 @@ django_settings_module = "example.settings"
 [tool.pytest]
 ini_options.testpaths = [ "tests" ]
 ini_options.pythonpath = [ "src", "example", "." ]
-ini_options.addopts = "--no-migrations --cov=django_admin_fieldsets_with_inlines --cov-report=term-missing"
+ini_options.addopts = "--no-migrations --cov=django_admin_fieldsets_extra --cov-report=term-missing"
 ini_options.DJANGO_SETTINGS_MODULE = "tests.settings"
 
 [tool.coverage]
 run.branch = true
-run.source = [ "django_admin_fieldsets_with_inlines" ]
+run.source = [ "django_admin_fieldsets_extra" ]
 report.show_missing = true
 report.skip_covered = true
 

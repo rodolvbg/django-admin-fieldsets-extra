@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from django_admin_fieldsets_with_inlines.mixins import FieldsetsWithInlinesMixin
+from django_admin_fieldsets_extra.mixins import FieldsetsExtraMixin
 
 from .models import Article, Author, Book
 
@@ -16,7 +16,7 @@ class ArticleInline(admin.StackedInline):
 
 
 @admin.register(Author)
-class AuthorAdmin(FieldsetsWithInlinesMixin, admin.ModelAdmin):
+class AuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
     list_display = ["name"]
     fieldsets_with_inlines = [
         (None, {"fields": ["name"]}),

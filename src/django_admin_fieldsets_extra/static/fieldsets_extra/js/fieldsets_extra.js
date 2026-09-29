@@ -1,5 +1,5 @@
 /*
- * django-admin-fieldsets-with-inlines
+ * django-admin-fieldsets-extra
  *
  * The "Save <fieldset>" buttons: post only that fieldset's fields and swap
  * in the re-rendered fieldset. Plain script, no dependencies; uses
@@ -74,7 +74,7 @@
                 .trigger("change");
         }
         container.dispatchEvent(
-            new CustomEvent("fieldsets-with-inlines:saved", { bubbles: true }),
+            new CustomEvent("fieldsets-extra:saved", { bubbles: true }),
         );
     }
 
@@ -133,7 +133,7 @@
         }
     });
 
-    globalThis.DjangoAdminFieldsetsWithInlines = {
+    globalThis.DjangoAdminFieldsetsExtra = {
         fieldsetFormData,
         saveFieldset,
     };

@@ -4,9 +4,9 @@ let api;
 
 beforeAll(async () => {
     await import(
-        "../../src/django_admin_fieldsets_with_inlines/static/fieldsets_with_inlines/js/fieldsets_with_inlines.js"
+        "../../src/django_admin_fieldsets_extra/static/fieldsets_extra/js/fieldsets_extra.js"
     );
-    api = globalThis.DjangoAdminFieldsetsWithInlines;
+    api = globalThis.DjangoAdminFieldsetsExtra;
 });
 
 describe("fieldsetFormData", () => {

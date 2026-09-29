@@ -40,7 +40,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/project/django-admin-fieldsets-with-inlines/
+      url: https://pypi.org/project/django-admin-fieldsets-extra/
 
     steps:
       - name: Retrieve release distributions
