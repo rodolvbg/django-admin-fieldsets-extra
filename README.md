@@ -215,6 +215,11 @@ them.
 | `admin_fieldsets_extra.E003` | `fieldsets` or `inlines` is set as well. |
 | `admin_fieldsets_extra.E004` | A fieldset's `save_button` is not `True` or `False`. |
 
+## Translations
+
+Ships a Spanish (`es`) translation: the save buttons, their tooltips and
+the status messages follow the admin's active language.
+
 ## Demo
 
 ```bash

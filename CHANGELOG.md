@@ -17,4 +17,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   blocks.
 - `"save_button": True` on a layout fieldset: a button that saves only its
   fields, re-rendering the fieldset in place.
+- Spanish translation (`locale/es`).
 - System checks.
