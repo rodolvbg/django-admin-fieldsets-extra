@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   blocks.
 - `"save_button": True` on a layout fieldset: a button that saves only its
   fields, re-rendering the fieldset in place.
+- `contrib.unfold.UnfoldFieldsetsExtraMixin` (`unfold` extra): the layout
+  and save buttons with django-unfold, its tab fieldsets rendered as its
+  tabs; check `admin_fieldsets_extra.E101`.
 - Spanish translation (`locale/es`).
 - System checks, including a warning when `get_fieldsets_with_inlines()`
   is overridden while `fieldsets` / `inlines` are set too.

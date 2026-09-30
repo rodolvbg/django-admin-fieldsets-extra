@@ -1,0 +1,15 @@
+{% extends "admin/fieldsets_extra/change_form.html" %}
+{% comment %}
+  The layout with Unfold: its tab fieldsets are rendered as its tabs, all of
+  them where the first one is in the layout.
+{% endcomment %}
+
+{% block layout_fieldset %}
+  {% if "tab" in fieldset.classes %}
+    {% if item.index == fieldsets_extra_tabs_index %}
+      {% include "unfold/helpers/fieldsets_tabs.html" %}
+    {% endif %}
+  {% else %}
+    {{ block.super }}
+  {% endif %}
+{% endblock layout_fieldset %}

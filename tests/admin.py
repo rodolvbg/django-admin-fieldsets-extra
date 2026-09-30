@@ -70,6 +70,32 @@ else:
         ]
 
 
+try:
+    from unfold.admin import ModelAdmin as UnfoldModelAdmin
+    from unfold.admin import TabularInline as UnfoldTabularInline
+    from unfold.sites import UnfoldAdminSite
+except ImportError:  # django-unfold is not installed
+    unfold_site = None
+else:
+    from django_admin_fieldsets_extra.contrib.unfold import UnfoldFieldsetsExtraMixin
+
+    unfold_site = UnfoldAdminSite(name="unfold_admin")
+
+    class UnfoldBookInline(UnfoldTabularInline):
+        model = Book
+        extra = 0
+
+    @admin.register(Author, site=unfold_site)
+    class UnfoldAuthorAdmin(UnfoldFieldsetsExtraMixin, UnfoldModelAdmin):
+        fieldsets_with_inlines = [
+            (None, {"fields": ["name"]}),
+            ("Phone", {"fields": ["phone"], "classes": ["tab"]}),
+            UnfoldBookInline,
+            ("Contact", {"fields": ["email"], "save_button": True}),
+            ("Biography", {"fields": ["bio"], "classes": ["tab"]}),
+        ]
+
+
 @admin.register(Book, site=site)
 class PlainBookAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
     """The mixin without a layout: the regular change form."""

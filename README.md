@@ -195,18 +195,20 @@ class AuthorAdmin(InlineControlsAdminMixin, FieldsetsExtraMixin, admin.ModelAdmi
     fieldsets_with_inlines = [
         (None, {"fields": ["name"]}),
         BookInline,
-        (
-            "Contact",
-            {"fields": ["email", "phone"], "classes": ["inline-controls-save"]},
-        ),
+        ("Contact", {"fields": ["email", "phone"], "save_button": True}),
     ]
 ```
 
 Neither package knows about the other: the controls are part of each
-inline's own template, and the fieldset save buttons are attached to
-fieldsets by their class, wherever the layout puts them. Fieldsets keep
+inline's own template, and the fieldset save buttons belong to the
+fieldsets, wherever the layout puts them. Fieldsets keep
 their position in `get_fieldsets()`, which is how the save endpoint finds
 them.
+
+## Themes
+
+- [django-unfold](docs/themes/unfold.md): `UnfoldFieldsetsExtraMixin` (the
+  `unfold` extra).
 
 ## System checks
 
@@ -216,6 +218,7 @@ them.
 | `admin_fieldsets_extra.E002` | An entry is neither a `(name, {"fields": ...})` fieldset nor an inline class. |
 | `admin_fieldsets_extra.E003` | `fieldsets` or `inlines` is set as well. |
 | `admin_fieldsets_extra.E004` | A fieldset's `save_button` is not `True` or `False`. |
+| `admin_fieldsets_extra.E101` | An Unfold tab fieldset (`"classes": ["tab"]`) has a `save_button` (`UnfoldFieldsetsExtraMixin`). |
 | `admin_fieldsets_extra.W001` | `get_fieldsets_with_inlines()` is overridden and `fieldsets` or `inlines` is set too: they are ignored whenever it returns a layout (warning). |
 
 ## Translations
@@ -230,6 +233,7 @@ cd example
 python manage.py migrate
 python manage.py seed_demo      # admin/admin + an author with books
 python manage.py runserver
+
 ```
 
 ## Compatibility
