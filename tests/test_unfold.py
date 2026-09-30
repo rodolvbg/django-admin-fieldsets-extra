@@ -31,7 +31,9 @@ def test_tabs_render_where_the_first_one_is(admin_client, author):
     assert html.count("activeFieldsetTab = 'phone'") == 1
     assert html.count("activeFieldsetTab = 'biography'") == 1
     assert html.index('name="name"') < html.index("activeFieldsetTab = 'phone'")
-    assert html.index("activeFieldsetTab = 'biography'") < html.index('id="books-group"')
+    assert html.index("activeFieldsetTab = 'biography'") < html.index(
+        'id="books-group"'
+    )
     assert html.index('name="bio"') < html.index('id="books-group"')
     # The other fieldsets as usual, with their save button.
     assert html.index('id="books-group"') < html.index(">Save Contact</button>")
@@ -58,7 +60,9 @@ def make_admin(layout):
 
 def test_a_tab_cannot_have_a_save_button():
     tab = ("Bio", {"fields": ["bio"], "classes": ["tab"], "save_button": True})
-    ids = [error.id for error in make_admin([(None, {"fields": ["name"]}), tab]).check()]
+    ids = [
+        error.id for error in make_admin([(None, {"fields": ["name"]}), tab]).check()
+    ]
 
     assert "admin_fieldsets_extra.E101" in ids
 

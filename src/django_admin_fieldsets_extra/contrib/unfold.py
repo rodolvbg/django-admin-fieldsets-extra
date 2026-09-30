@@ -59,9 +59,7 @@ class UnfoldFieldsetsExtraMixin(FieldsetsExtraMixin):
             ),
             None,
         )
-        return super().render_change_form(
-            request, context, add, change, form_url, obj
-        )
+        return super().render_change_form(request, context, add, change, form_url, obj)
 
     @property
     def media(self) -> forms.Media:
