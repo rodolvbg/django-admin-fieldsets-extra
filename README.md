@@ -13,7 +13,7 @@ Extras for Django admin fieldsets:
 - **Save a fieldset on its own** with a "Save Contact" button, without
   submitting or reloading the rest of the page.
 
-![Books inline between the name and the contact fieldset, articles before the biography](https://github.com/rodolvbg/django-admin-fieldsets-extra/blob/main/docs/screenshots/hero.png)
+![Books inline between the name and the contact fieldset, articles before the biography](docs/screenshots/hero.png)
 
 - One ordered list replaces `fieldsets` + `inlines` (with or without
   inlines in it).
@@ -94,7 +94,7 @@ name) that saves only its fields:
 (("Contact", {"fields": ["email", "phone"], "save_button": True}),)
 ```
 
-![A fieldset with its own save button, after saving](https://github.com/rodolvbg/django-admin-fieldsets-extra/blob/main/docs/screenshots/save-fieldset.png)
+![A fieldset with its own save button, after saving](docs/screenshots/save-fieldset.png)
 
 `save_button` is an option of this package: it is removed before the
 fieldset reaches Django (whose `Fieldset` rejects unknown options), so
@@ -207,7 +207,7 @@ them.
 
 ## Themes
 
-- [django-unfold](https://github.com/rodolvbg/django-admin-fieldsets-extra/blob/main/docs/themes/unfold.md): `UnfoldFieldsetsExtraMixin` (the
+- [django-unfold](docs/themes/unfold.md): `UnfoldFieldsetsExtraMixin` (the
   `unfold` extra).
 
 ## System checks
