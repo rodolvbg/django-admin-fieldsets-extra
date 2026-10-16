@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -18,11 +17,13 @@ from django.urls import NoReverseMatch, URLPattern, path, reverse
 from django.utils.translation import gettext
 from django.views.decorators.http import require_POST
 
-from django_admin_fieldsets_extra.types import FieldsetSpec, Layout
-
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from django.template.response import _TemplateForResponseT
     from typing_extensions import TypeIs
+
+    from django_admin_fieldsets_extra.types import FieldsetSpec, Layout
 
 
 def is_inline(entry: object) -> TypeIs[type[InlineModelAdmin]]:

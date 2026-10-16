@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 try:
     import unfold  # noqa: F401
@@ -15,9 +15,11 @@ except ImportError as e:
 
 from django import forms
 from django.core import checks
-from django.http import HttpRequest, HttpResponse
 
 from django_admin_fieldsets_extra.mixins import FieldsetsExtraMixin, is_inline
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
 
 
 def is_tab(options: Mapping[str, Any]) -> bool:
