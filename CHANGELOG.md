@@ -33,5 +33,4 @@ First release.
 - Spanish translation (`locale/es`).
 - System checks, including a warning when `get_fieldsets_with_inlines()`
   is overridden while `fieldsets` / `inlines` are set too.
-- Works with django-admin-inline-controls' inlines, and Django 4.2 – 6.1,
-  Python 3.10+.
+- Works with Django 4.2 – 6.1, Python 3.10+.

@@ -50,17 +50,6 @@ npm test
 npm run coverage
 ```
 
-## Testing with django-admin-inline-controls
-
-`tests/test_inline_controls.py` checks that both packages work together.
-It is skipped unless django-admin-inline-controls is installed, e.g. from a
-sibling checkout:
-
-```bash
-uv pip install -e ../django-admin-inline-controls
-uv run --no-sync pytest   # --no-sync keeps it installed
-```
-
 ## Compatibility matrix (tox)
 
 `uv run pytest` above only runs against whatever Django version `uv.lock`

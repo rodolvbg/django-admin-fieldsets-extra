@@ -15,9 +15,6 @@ INSTALLED_APPS = [
     "django_admin_fieldsets_extra",
     "demo",
 ]
-# Integration tests run when django-admin-inline-controls is installed.
-if importlib.util.find_spec("django_admin_inline_controls"):
-    INSTALLED_APPS.append("django_admin_inline_controls")
 # The Unfold tests run when django-unfold is installed: after the admin, so
 # the other tests keep Django's templates, and without replacing admin.site.
 if importlib.util.find_spec("unfold"):

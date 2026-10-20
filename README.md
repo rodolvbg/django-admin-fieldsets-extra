@@ -22,8 +22,6 @@ Extras for Django admin fieldsets:
   version.
 - Nothing changes in the inlines' DOM: Django's inline JS ("Add another",
   autocomplete, date pickers…) and inline templates work as usual.
-- Works with [django-admin-inline-controls](https://github.com/rodolvbg/django-admin-inline-controls)
-  (paginated / filterable inlines, a save button per inline).
 
 ## Install
 
@@ -172,38 +170,6 @@ items with `is_inline`, `fieldset`, `index`, `inline_admin_formset`,
 `save_url` and `save_label`.
 `get_layout_items()` builds it, if you need to change how the layout is
 matched to the form.
-
-## With django-admin-inline-controls
-
-Both mixins go on the `ModelAdmin`, `InlineControlsAdminMixin` first:
-
-```python
-from django_admin_inline_controls.mixins import (
-    InlineControlsAdminMixin,
-    InlineControlsMixin,
-)
-
-
-class BookInline(InlineControlsMixin, admin.TabularInline):
-    model = Book
-    inline_per_page = 20
-    inline_save_button = True
-
-
-@admin.register(Author)
-class AuthorAdmin(InlineControlsAdminMixin, FieldsetsExtraMixin, admin.ModelAdmin):
-    fieldsets_with_inlines = [
-        (None, {"fields": ["name"]}),
-        BookInline,
-        ("Contact", {"fields": ["email", "phone"], "save_button": True}),
-    ]
-```
-
-Neither package knows about the other: the controls are part of each
-inline's own template, and the fieldset save buttons belong to the
-fieldsets, wherever the layout puts them. Fieldsets keep
-their position in `get_fieldsets()`, which is how the save endpoint finds
-them.
 
 ## Themes
 

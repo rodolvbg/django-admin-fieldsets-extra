@@ -43,34 +43,6 @@ class DynamicAuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
 
 
 try:
-    from django_admin_inline_controls.mixins import (
-        InlineControlsAdminMixin,
-        InlineControlsMixin,
-    )
-except ImportError:  # django-admin-inline-controls is not installed
-    controls_site = None
-else:
-    controls_site = admin.AdminSite(name="controls_admin")
-
-    class ControlledBookInline(InlineControlsMixin, admin.TabularInline):
-        model = Book
-        extra = 0
-        inline_per_page = 2
-        inline_save_button = True
-
-    @admin.register(Author, site=controls_site)
-    class ControlledAuthorAdmin(
-        InlineControlsAdminMixin, FieldsetsExtraMixin, admin.ModelAdmin
-    ):
-        fieldsets_with_inlines = [
-            (None, {"fields": ["name"]}),
-            ControlledBookInline,
-            ("Contact", {"fields": ["email", "phone"], "save_button": True}),
-            ("Biography", {"fields": ["bio"], "save_button": True}),
-        ]
-
-
-try:
     from unfold.admin import ModelAdmin as UnfoldModelAdmin
     from unfold.admin import TabularInline as UnfoldTabularInline
     from unfold.sites import UnfoldAdminSite
