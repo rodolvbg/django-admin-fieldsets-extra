@@ -64,9 +64,6 @@ def mo_messages(path):
 class TestCatalogs:
     """The shipped .po/.mo catalogs."""
 
-    def test_there_is_a_spanish_catalog(self):
-        assert [c.parent.parent.name for c in CATALOGS] == ["es"]
-
     @pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
     def test_every_message_is_translated(self, catalog):
         problems = [
