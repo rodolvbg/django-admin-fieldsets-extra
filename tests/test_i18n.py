@@ -61,50 +61,54 @@ def mo_messages(path):
     return {key: value for key, value in catalog.items() if key != ""}
 
 
-def test_there_is_a_spanish_catalog():
-    assert [c.parent.parent.name for c in CATALOGS] == ["es"]
+class TestCatalogs:
+    """The shipped .po/.mo catalogs."""
+
+    def test_there_is_a_spanish_catalog(self):
+        assert [c.parent.parent.name for c in CATALOGS] == ["es"]
+
+    @pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
+    def test_every_message_is_translated(self, catalog):
+        problems = [
+            line
+            for msgstrs, fuzzy, line in po_entries(catalog)
+            if fuzzy or not all(s.strip() for s in msgstrs)
+        ]
+        assert problems == []
+
+    @pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
+    def test_compiled_catalog_is_up_to_date(self, catalog):
+        """The shipped .mo has exactly the .po's translations (not compared by
+        date: a git checkout gives both files arbitrary modification times)."""
+        compiled = catalog.with_suffix(".mo")
+
+        assert compiled.exists()
+        assert mo_messages(compiled) == po_messages(catalog)
 
 
-@pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
-def test_every_message_is_translated(catalog):
-    problems = [
-        line
-        for msgstrs, fuzzy, line in po_entries(catalog)
-        if fuzzy or not all(s.strip() for s in msgstrs)
-    ]
-    assert problems == []
+class TestSpanishTranslation:
+    """The rendered admin in Spanish."""
 
+    def test_save_button_in_spanish(self, admin_client, author):
+        url = reverse("admin:demo_author_change", args=[author.pk])
+        with translation.override("es"):
+            html = admin_client.get(url).content.decode()
 
-@pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
-def test_compiled_catalog_is_up_to_date(catalog):
-    """The shipped .mo has exactly the .po's translations (not compared by
-    date: a git checkout gives both files arbitrary modification times)."""
-    compiled = catalog.with_suffix(".mo")
+        assert ">Guardar Contact</button>" in html
+        assert 'title="Guarda solo esta sección.' in html
+        assert 'data-fieldset-save-failed="No se pudieron guardar los cambios.' in html
 
-    assert compiled.exists()
-    assert mo_messages(compiled) == po_messages(catalog)
+    def test_save_status_in_spanish(self, admin_client, author):
+        url = reverse("admin:demo_author_fieldset_save", args=[author.pk, 1])
+        with translation.override("es"):
+            saved = admin_client.post(url, {"email": "a@example.com", "phone": ""})
+            invalid = admin_client.post(url, {"email": "nope", "phone": ""})
 
-
-def test_save_button_in_spanish(admin_client, author):
-    url = reverse("admin:demo_author_change", args=[author.pk])
-    with translation.override("es"):
-        html = admin_client.get(url).content.decode()
-
-    assert ">Guardar Contact</button>" in html
-    assert 'title="Guarda solo esta sección.' in html
-    assert 'data-fieldset-save-failed="No se pudieron guardar los cambios.' in html
-
-
-def test_save_status_in_spanish(admin_client, author):
-    url = reverse("admin:demo_author_fieldset_save", args=[author.pk, 1])
-    with translation.override("es"):
-        saved = admin_client.post(url, {"email": "a@example.com", "phone": ""})
-        invalid = admin_client.post(url, {"email": "nope", "phone": ""})
-
-    assert ">Guardado.</span>" in saved.content.decode()
-    assert (
-        "Por favor, corrija los errores detallados abajo." in invalid.content.decode()
-    )
-    assert "Introduzca una dirección de correo electrónico válida." in (
-        invalid.content.decode()
-    )
+        assert ">Guardado.</span>" in saved.content.decode()
+        assert (
+            "Por favor, corrija los errores detallados abajo."
+            in invalid.content.decode()
+        )
+        assert "Introduzca una dirección de correo electrónico válida." in (
+            invalid.content.decode()
+        )

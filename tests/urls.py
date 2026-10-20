@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.urls import path
 
-from tests.admin import unfold_site
 from tests.admin import site as test_admin_site
+from tests.admin import unfold_site
 
 urlpatterns = [
     path("admin/", admin.site.urls),
