@@ -1,13 +1,16 @@
 import importlib
 import sys
+from unittest import mock
 
 import pytest
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
 pytest.importorskip("unfold")
 
-from demo.models import Author  # noqa: E402
+from demo.models import Article, Author, Book  # noqa: E402
 
 from django_admin_fieldsets_extra.contrib.unfold import (  # noqa: E402
     UnfoldFieldsetsExtraMixin,
@@ -23,22 +26,35 @@ def make_admin(layout):
     return admin_class(Author, admin.AdminSite(name="check_unfold"))
 
 
-class TestUnfoldFieldsetsExtraMixin:
+class TestUnfoldFieldsetsExtraMixin(TestCase):
     """The Unfold layout, tabs and save buttons."""
 
-    def test_import_without_unfold_raises_helpful_error(self, monkeypatch):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_superuser(
+            "admin", "admin@example.com", "password"
+        )
+        cls.author = Author.objects.create(name="Author")
+        Book.objects.create(author=cls.author, title="A book")
+        Article.objects.create(author=cls.author, title="An article")
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_import_without_unfold_raises_helpful_error(self):
         module = "django_admin_fieldsets_extra.contrib.unfold"
-        monkeypatch.setitem(sys.modules, "unfold", None)
-        monkeypatch.delitem(sys.modules, module, raising=False)
+        with mock.patch.dict(sys.modules):
+            sys.modules["unfold"] = None
+            sys.modules.pop(module, None)
 
-        with pytest.raises(
-            ImportError, match=r"django-admin-fieldsets-extra\[unfold\]"
-        ):
-            importlib.import_module(module)
+            with self.assertRaisesRegex(
+                ImportError, r"django-admin-fieldsets-extra\[unfold\]"
+            ):
+                importlib.import_module(module)
 
-    def test_tabs_render_where_the_first_one_is(self, admin_client, author):
-        url = reverse("unfold_admin:demo_author_change", args=[author.pk])
-        html = admin_client.get(url).content.decode()
+    def test_tabs_render_where_the_first_one_is(self):
+        url = reverse("unfold_admin:demo_author_change", args=[self.author.pk])
+        html = self.client.get(url).content.decode()
 
         # Both tabs, once, between "name" and the books inline.
         assert html.count("activeFieldsetTab = 'phone'") == 1
@@ -52,16 +68,18 @@ class TestUnfoldFieldsetsExtraMixin:
         assert html.index('id="books-group"') < html.index(">Save Contact</button>")
         assert "fieldsets_extra/css/contrib/unfold.css" in html
 
-    def test_save_works_on_unfold(self, admin_client, author):
-        url = reverse("unfold_admin:demo_author_fieldset_save", args=[author.pk, 2])
-        response = admin_client.post(url, {"email": "new@example.com"})
+    def test_save_works_on_unfold(self):
+        url = reverse(
+            "unfold_admin:demo_author_fieldset_save", args=[self.author.pk, 2]
+        )
+        response = self.client.post(url, {"email": "new@example.com"})
 
         assert b"fieldset-save-status-saved" in response.content
-        author.refresh_from_db()
-        assert author.email == "new@example.com"
+        self.author.refresh_from_db()
+        assert self.author.email == "new@example.com"
 
 
-class TestUnfoldChecks:
+class TestUnfoldChecks(SimpleTestCase):
     """System check E101."""
 
     def test_a_tab_cannot_have_a_save_button(self):

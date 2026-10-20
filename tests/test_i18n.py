@@ -5,11 +5,15 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from demo.models import Article, Author, Book
+from django.contrib.auth.models import User
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import translation
 
 LOCALE_DIR = Path(__file__).parent.parent / "src/django_admin_fieldsets_extra/locale"
 CATALOGS = sorted(LOCALE_DIR.glob("*/LC_MESSAGES/django.po"))
+CATALOG_IDS = [c.parent.parent.name for c in CATALOGS]
 
 
 def po_entries(path):
@@ -61,10 +65,10 @@ def mo_messages(path):
     return {key: value for key, value in catalog.items() if key != ""}
 
 
+@pytest.mark.parametrize("catalog", CATALOGS, ids=CATALOG_IDS)
 class TestCatalogs:
     """The shipped .po/.mo catalogs."""
 
-    @pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
     def test_every_message_is_translated(self, catalog):
         problems = [
             line
@@ -73,7 +77,6 @@ class TestCatalogs:
         ]
         assert problems == []
 
-    @pytest.mark.parametrize("catalog", CATALOGS, ids=lambda c: c.parent.parent.name)
     def test_compiled_catalog_is_up_to_date(self, catalog):
         """The shipped .mo has exactly the .po's translations (not compared by
         date: a git checkout gives both files arbitrary modification times)."""
@@ -83,23 +86,35 @@ class TestCatalogs:
         assert mo_messages(compiled) == po_messages(catalog)
 
 
-class TestSpanishTranslation:
+class TestSpanishTranslation(TestCase):
     """The rendered admin in Spanish."""
 
-    def test_save_button_in_spanish(self, admin_client, author):
-        url = reverse("admin:demo_author_change", args=[author.pk])
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_superuser(
+            "admin", "admin@example.com", "password"
+        )
+        cls.author = Author.objects.create(name="Author")
+        Book.objects.create(author=cls.author, title="A book")
+        Article.objects.create(author=cls.author, title="An article")
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_save_button_in_spanish(self):
+        url = reverse("admin:demo_author_change", args=[self.author.pk])
         with translation.override("es"):
-            html = admin_client.get(url).content.decode()
+            html = self.client.get(url).content.decode()
 
         assert ">Guardar Contact</button>" in html
         assert 'title="Guarda solo esta sección.' in html
         assert 'data-fieldset-save-failed="No se pudieron guardar los cambios.' in html
 
-    def test_save_status_in_spanish(self, admin_client, author):
-        url = reverse("admin:demo_author_fieldset_save", args=[author.pk, 1])
+    def test_save_status_in_spanish(self):
+        url = reverse("admin:demo_author_fieldset_save", args=[self.author.pk, 1])
         with translation.override("es"):
-            saved = admin_client.post(url, {"email": "a@example.com", "phone": ""})
-            invalid = admin_client.post(url, {"email": "nope", "phone": ""})
+            saved = self.client.post(url, {"email": "a@example.com", "phone": ""})
+            invalid = self.client.post(url, {"email": "nope", "phone": ""})
 
         assert ">Guardado.</span>" in saved.content.decode()
         assert (

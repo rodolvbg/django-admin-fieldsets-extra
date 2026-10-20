@@ -1,10 +1,12 @@
 import re
 
-import pytest
 from demo.admin import ArticleInline, AuthorAdmin, BookInline
-from demo.models import Author
+from demo.models import Article, Author, Book
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
+from unittest_parametrize import ParametrizedTestCase, parametrize
 
 from django_admin_fieldsets_extra.mixins import (
     FieldsetsExtraMixin,
@@ -48,8 +50,20 @@ def hook_admin_ids(**attrs):
     return ids(get_fieldsets_with_inlines=get_fieldsets_with_inlines, **attrs)
 
 
-class TestFieldsetsExtraMixin:
+class TestFieldsetsExtraMixin(TestCase):
     """Deriving and rendering the layout."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_superuser(
+            "admin", "admin@example.com", "password"
+        )
+        cls.author = Author.objects.create(name="Author")
+        Book.objects.create(author=cls.author, title="A book")
+        Article.objects.create(author=cls.author, title="An article")
+
+    def setUp(self):
+        self.client.force_login(self.user)
 
     def test_derived_fieldsets_and_inlines(self):
         assert AuthorAdmin.fieldsets == [
@@ -59,9 +73,9 @@ class TestFieldsetsExtraMixin:
         ]
         assert AuthorAdmin.inlines == [BookInline, ArticleInline]
 
-    def test_change_form_renders_in_layout_order(self, admin_client, author):
-        url = reverse("admin:demo_author_change", args=[author.pk])
-        html = admin_client.get(url).content.decode()
+    def test_change_form_renders_in_layout_order(self):
+        url = reverse("admin:demo_author_change", args=[self.author.pk])
+        html = self.client.get(url).content.decode()
 
         assert order(html) == [
             "name",
@@ -73,14 +87,14 @@ class TestFieldsetsExtraMixin:
         # Inlines are rendered once, not also after the fieldsets.
         assert html.count('id="books-group"') == 1
 
-    def test_add_view_renders_in_layout_order(self, admin_client, db):
-        html = admin_client.get(reverse("admin:demo_author_add")).content.decode()
+    def test_add_view_renders_in_layout_order(self):
+        html = self.client.get(reverse("admin:demo_author_add")).content.decode()
 
         assert order(html)[:3] == ["name", "books-group", "Contact"]
 
-    def test_saving_the_whole_form_still_works(self, admin_client, author):
-        book = author.books.get()
-        article = author.articles.get()
+    def test_saving_the_whole_form_still_works(self):
+        book = self.author.books.get()
+        article = self.author.articles.get()
         data = {
             "name": "Renamed",
             "email": "",
@@ -89,35 +103,35 @@ class TestFieldsetsExtraMixin:
             "books-TOTAL_FORMS": "1",
             "books-INITIAL_FORMS": "1",
             "books-0-id": str(book.pk),
-            "books-0-author": str(author.pk),
+            "books-0-author": str(self.author.pk),
             "books-0-title": "Retitled",
             "articles-TOTAL_FORMS": "1",
             "articles-INITIAL_FORMS": "1",
             "articles-0-id": str(article.pk),
-            "articles-0-author": str(author.pk),
+            "articles-0-author": str(self.author.pk),
             "articles-0-title": "An article",
         }
-        url = reverse("admin:demo_author_change", args=[author.pk])
-        response = admin_client.post(url, data)
+        url = reverse("admin:demo_author_change", args=[self.author.pk])
+        response = self.client.post(url, data)
 
         assert response.status_code == 302
-        author.refresh_from_db()
+        self.author.refresh_from_db()
         book.refresh_from_db()
-        assert (author.name, book.title) == ("Renamed", "Retitled")
+        assert (self.author.name, book.title) == ("Renamed", "Retitled")
 
-    def test_dynamic_layout_and_hidden_inline(self, admin_client, author):
-        url = reverse("test_admin:demo_author_change", args=[author.pk])
-        html = admin_client.get(url).content.decode()
+    def test_dynamic_layout_and_hidden_inline(self):
+        url = reverse("test_admin:demo_author_change", args=[self.author.pk])
+        html = self.client.get(url).content.decode()
 
         # The inline without view permission is skipped, not left as a hole.
         assert order(html) == ["Contact", "name", "books-group"]
         assert 'id="articles-group"' not in html
 
-        compact = admin_client.get(f"{url}?compact=1").content.decode()
+        compact = self.client.get(f"{url}?compact=1").content.decode()
         assert order(compact) == ["name", "books-group"]
         assert 'name="email"' in compact
 
-    def test_unlisted_fieldsets_and_inlines_are_appended(self, admin_user, rf, author):
+    def test_unlisted_fieldsets_and_inlines_are_appended(self):
         class Admin(FieldsetsExtraMixin, admin.ModelAdmin):
             fieldsets_with_inlines = [BookInline]
 
@@ -128,21 +142,21 @@ class TestFieldsetsExtraMixin:
                 return [BookInline, ArticleInline]
 
         model_admin = Admin(Author, admin.AdminSite())
-        request = rf.get("/")
-        request.user = admin_user
+        request = RequestFactory().get("/")
+        request.user = self.user
         formsets, inline_instances = model_admin._create_formsets(
-            request, author, change=True
+            request, self.author, change=True
         )
         inline_admin_formsets = model_admin.get_inline_formsets(
-            request, formsets, inline_instances, author
+            request, formsets, inline_instances, self.author
         )
         adminform = admin.helpers.AdminForm(
-            model_admin.get_form(request, author)(instance=author),
-            model_admin.get_fieldsets(request, author),
+            model_admin.get_form(request, self.author)(instance=self.author),
+            model_admin.get_fieldsets(request, self.author),
             {},
         )
         items = model_admin.get_layout_items(
-            request, author, adminform, inline_admin_formsets
+            request, self.author, adminform, inline_admin_formsets
         )
 
         assert [
@@ -150,12 +164,12 @@ class TestFieldsetsExtraMixin:
             for i in items
         ] == ["BookInline", 0, "ArticleInline"]
 
-    def test_without_a_layout_it_is_a_plain_model_admin(self, admin_client, author, rf):
+    def test_without_a_layout_it_is_a_plain_model_admin(self):
         class Admin(FieldsetsExtraMixin, admin.ModelAdmin):
             inlines = [BookInline]
 
         model_admin = Admin(Author, admin.AdminSite())
-        request = rf.get("/")
+        request = RequestFactory().get("/")
 
         assert model_admin.get_inlines(request, None) == [BookInline]
         assert model_admin.get_fieldsets(request, None) == [
@@ -163,16 +177,16 @@ class TestFieldsetsExtraMixin:
         ]
         assert model_admin.check() == []
 
-    def test_mixin_without_layout_renders_the_regular_form(self, admin_client, author):
-        book = author.books.get()
+    def test_mixin_without_layout_renders_the_regular_form(self):
+        book = self.author.books.get()
         url = reverse("test_admin:demo_book_change", args=[book.pk])
-        response = admin_client.get(url)
+        response = self.client.get(url)
 
         assert response.status_code == 200
         assert "fieldsets_with_inlines" not in response.context
         assert 'name="title"' in response.content.decode()
 
-    def test_layout_with_more_fieldsets_than_the_form(self, admin_user, rf, author):
+    def test_layout_with_more_fieldsets_than_the_form(self):
         class Admin(FieldsetsExtraMixin, admin.ModelAdmin):
             fieldsets_with_inlines = [
                 (None, {"fields": ["name"]}),
@@ -180,19 +194,19 @@ class TestFieldsetsExtraMixin:
             ]
 
         model_admin = Admin(Author, admin.AdminSite())
-        request = rf.get("/")
-        request.user = admin_user
+        request = RequestFactory().get("/")
+        request.user = self.user
         adminform = admin.helpers.AdminForm(
-            model_admin.get_form(request, author)(instance=author),
+            model_admin.get_form(request, self.author)(instance=self.author),
             [(None, {"fields": ["name"]})],
             {},
         )
 
-        items = model_admin.get_layout_items(request, author, adminform, [])
+        items = model_admin.get_layout_items(request, self.author, adminform, [])
         assert [item.index for item in items] == [0]
 
 
-class TestSplitLayout:
+class TestSplitLayout(SimpleTestCase):
     """split_layout()."""
 
     def test_split_layout(self):
@@ -202,7 +216,7 @@ class TestSplitLayout:
         )
 
 
-class TestLayoutChecks:
+class TestLayoutChecks(ParametrizedTestCase, SimpleTestCase):
     """System checks of the layout (E001-E003, W001)."""
 
     def test_valid_layout_has_no_errors(self):
@@ -210,7 +224,7 @@ class TestLayoutChecks:
             ids(fieldsets_with_inlines=[(None, {"fields": ["name"]}), BookInline]) == []
         )
 
-    @pytest.mark.parametrize(
+    @parametrize(
         ("attrs", "error_id"),
         [
             ({"fieldsets_with_inlines": "name"}, "admin_fieldsets_extra.E001"),
@@ -242,7 +256,7 @@ class TestLayoutChecks:
 
         assert "admin.E012" in ids(fieldsets_with_inlines=layout)
 
-    @pytest.mark.parametrize(
+    @parametrize(
         "attrs",
         [
             {"fieldsets": [(None, {"fields": ["name"]})]},
@@ -252,14 +266,14 @@ class TestLayoutChecks:
     def test_hook_with_static_options_warns(self, attrs):
         assert "admin_fieldsets_extra.W001" in hook_admin_ids(**attrs)
 
-    @pytest.mark.parametrize(
+    @parametrize(
         "attrs",
         [
             {},
             # fieldsets/inlines are derived from the attribute, not set by hand.
             {"fieldsets_with_inlines": [(None, {"fields": ["name"]}), BookInline]},
         ],
-        ids=["hook alone", "with the layout attribute"],
+        ids=["hook_alone", "with_the_layout_attribute"],
     )
     def test_hook_without_static_options_does_not_warn(self, attrs):
         assert "admin_fieldsets_extra.W001" not in hook_admin_ids(**attrs)
