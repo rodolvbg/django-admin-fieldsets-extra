@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- `FieldsetsExtraMixin` is now `FieldsetsLayoutMixin` (inlines between
+  fieldsets) and `FieldsetSaveMixin` (the save buttons), each usable on its
+  own. The buttons' script and style load only where a fieldset has
+  `"save_button": True` (or the layout is decided per request), instead of
+  on every change form with the mixin.
+
 ## [0.1.1] - 2026-10-07
 
 ### Fixed

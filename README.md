@@ -134,6 +134,14 @@ fieldset reaches Django (whose `Fieldset` rejects unknown options), so
 4. Read-only fields are never saved; a fieldset with only read-only fields
    has no button (the endpoint answers 404).
 
+The buttons' script and style load only where a fieldset of the layout has
+`"save_button": True` (or the layout is decided per request, by
+`get_fieldsets_with_inlines()`).
+
+`FieldsetsExtraMixin` is two mixins: `FieldsetsLayoutMixin` (inlines
+between fieldsets) and `FieldsetSaveMixin` (the save buttons, over the
+layout). Use the first alone for a layout without buttons.
+
 ## Customizing the template
 
 The mixin sets `change_form_template` to
