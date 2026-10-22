@@ -9,7 +9,9 @@ from django.urls import reverse
 from unittest_parametrize import ParametrizedTestCase, parametrize
 
 from django_admin_fieldsets_extra.mixins import (
+    FieldsetSaveMixin,
     FieldsetsExtraMixin,
+    FieldsetsLayoutMixin,
     split_layout,
 )
 
@@ -288,3 +290,22 @@ class TestLayoutChecks(ParametrizedTestCase, SimpleTestCase):
 
         ids_ = [e.id for e in Admin(Author, admin.AdminSite()).check()]
         assert "admin_fieldsets_extra.W001" in ids_
+
+
+SCRIPT = "fieldsets_extra/js/fieldsets_extra.js"
+
+
+class TestLayoutAndSave(SimpleTestCase):
+    """The mixin is the layout and the save buttons; the layout works alone."""
+
+    def test_the_mixin_is_both(self):
+        assert issubclass(FieldsetsExtraMixin, FieldsetSaveMixin)
+        assert issubclass(FieldsetsExtraMixin, FieldsetsLayoutMixin)
+
+    def test_the_layout_alone(self):
+        class LayoutAdmin(FieldsetsLayoutMixin, admin.ModelAdmin):
+            fieldsets_with_inlines = [(None, {"fields": ["name"]}), BookInline]
+
+        model_admin = LayoutAdmin(Author, admin.site)
+        assert model_admin.inlines == [BookInline]
+        assert SCRIPT not in str(model_admin.media)

@@ -1,3 +1,4 @@
+from demo.admin import AuthorAdmin, BookInline
 from demo.models import Article, Author, Book
 from django import forms
 from django.contrib import admin
@@ -11,6 +12,7 @@ from django_admin_fieldsets_extra.mixins import (
     FieldsetsExtraMixin,
     django_fieldset,
 )
+from tests.admin import DynamicAuthorAdmin, PlainBookAdmin
 
 
 def change_url(author):
@@ -222,3 +224,33 @@ class TestSaveButtonCheck(SimpleTestCase):
         ids = [e.id for e in admin_class(Author, admin.AdminSite()).check()]
 
         assert "admin_fieldsets_extra.E004" in ids
+
+
+SCRIPT = "fieldsets_extra/js/fieldsets_extra.js"
+
+
+STYLE = "fieldsets_extra/css/fieldsets_extra.css"
+
+
+def media(admin_class, model=Author):
+    return str(admin_class(model, admin.site).media)
+
+
+class TestSaveScript(SimpleTestCase):
+    """The buttons' script and style: only where a fieldset may have a button."""
+
+    def test_the_save_script_only_where_a_fieldset_has_a_button(self):
+        # The demo's layout has a "save_button" fieldset.
+        assert SCRIPT in media(AuthorAdmin)
+        assert STYLE in media(AuthorAdmin)
+
+        class NoButtonAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
+            fieldsets_with_inlines = [(None, {"fields": ["name"]}), BookInline]
+
+        assert SCRIPT not in media(NoButtonAdmin)
+        assert STYLE not in media(NoButtonAdmin)
+        # Without a layout at all, the regular change form: none either.
+        assert SCRIPT not in media(PlainBookAdmin, model=Book)
+
+    def test_a_layout_per_request_may_have_buttons(self):
+        assert SCRIPT in media(DynamicAuthorAdmin)
