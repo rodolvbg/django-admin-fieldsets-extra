@@ -72,6 +72,7 @@ class TestFieldsetsExtraMixin(TestCase):
             (None, {"fields": ["name"]}),
             ("Contact", {"fields": ["email", "phone"]}),
             ("Biography", {"fields": ["bio"], "classes": ["collapse"]}),
+            ("Status", {"fields": ["active", "notes"]}),
         ]
         assert AuthorAdmin.inlines == [BookInline, ArticleInline]
 
@@ -175,7 +176,7 @@ class TestFieldsetsExtraMixin(TestCase):
 
         assert model_admin.get_inlines(request, None) == [BookInline]
         assert model_admin.get_fieldsets(request, None) == [
-            (None, {"fields": ["name", "email", "phone", "bio"]})
+            (None, {"fields": ["name", "email", "phone", "bio", "active", "notes"]})
         ]
         assert model_admin.check() == []
 

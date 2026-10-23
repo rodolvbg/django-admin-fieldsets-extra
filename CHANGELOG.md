@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `"autosave": True` on a fieldset of the layout: it saves itself as its
+  fields change, without a button, through the same endpoint as the save
+  button. What someone else changed in it meanwhile isn't overwritten (the
+  fieldset shows what's saved now); the fieldset being edited keeps its
+  focus. With everything editable saving itself, the page's "Save" buttons
+  aren't shown. Spanish translation of its texts.
+
 ### Changed
 
 - `FieldsetsExtraMixin` is now `FieldsetsLayoutMixin` (inlines between

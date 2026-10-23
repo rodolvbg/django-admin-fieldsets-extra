@@ -2,11 +2,13 @@
 {% comment %}
   One layout fieldset (`item`). With a save button, it is wrapped with the
   button in a container the JS replaces after saving; keep its id, the
-  data-fieldset-save-url attribute and the data-fieldset-save button.
+  data-fieldset-save-url attribute and the data-fieldset-save button. With
+  autosave (data-fieldset-autosave), the same container, without a button:
+  it saves itself as its fields change.
 {% endcomment %}
 {% with fieldset=item.fieldset %}
   {% if item.save_url %}
-    <div class="fieldset-with-save" id="fieldset-{{ item.index }}-container" data-fieldset-save-url="{{ item.save_url }}" data-fieldset-save-failed="{% translate 'The changes could not be saved. Please try again.' %}">
+    <div class="fieldset-with-save{% if item.autosave %} fieldset-autosave{% endif %}" id="fieldset-{{ item.index }}-container" data-fieldset-save-url="{{ item.save_url }}" data-fieldset-save-failed="{% translate 'The changes could not be saved. Please try again.' %}"{% if item.autosave %} data-fieldset-autosave data-fieldset-saving="{% translate 'Saving…' %}"{% endif %}>
       {% block non_field_errors %}
         {% if non_field_errors %}
           <div class="fieldset-save-errors">{{ non_field_errors }}</div>
@@ -18,7 +20,9 @@
       {% block save_bar %}
         <div class="fieldset-save-bar">
           <span class="fieldset-save-status{% if status %} fieldset-save-status-{{ status }}{% endif %}" role="status" aria-live="polite">{{ message }}</span>
-          <button type="button" class="button default" data-fieldset-save title="{% translate 'Saves only this section. Other changes on the page are kept but not saved.' %}">{% block save_label %}{{ item.save_label }}{% endblock %}</button>
+          {% if not item.autosave %}
+            <button type="button" class="button default" data-fieldset-save title="{% translate 'Saves only this section. Other changes on the page are kept but not saved.' %}">{% block save_label %}{{ item.save_label }}{% endblock %}</button>
+          {% endif %}
         </div>
       {% endblock save_bar %}
     </div>

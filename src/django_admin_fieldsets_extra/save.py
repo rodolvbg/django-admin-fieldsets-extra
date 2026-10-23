@@ -1,4 +1,5 @@
-"""A button that saves only one fieldset's fields."""
+"""A button that saves only one fieldset's fields, or the fieldset saving
+itself as they change (autosave)."""
 
 from __future__ import annotations
 
@@ -10,7 +11,7 @@ from django.contrib.admin.helpers import AdminForm, Fieldset
 from django.contrib.admin.utils import flatten_fieldsets, quote
 from django.core.exceptions import PermissionDenied
 from django.db import router, transaction
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, QueryDict
 from django.template.response import TemplateResponse
 from django.urls import NoReverseMatch, URLPattern, path, reverse
 from django.utils.translation import gettext
@@ -22,9 +23,20 @@ if TYPE_CHECKING:
     from django_admin_fieldsets_extra.types import FieldsetSpec
 
 
+def saves(options: Any) -> bool:
+    """Whether a fieldset's options make it save on its own: a button, or
+    autosave."""
+    return bool(options.get("save_button") or options.get("autosave"))
+
+
 class FieldsetSaveMixin(FieldsetsLayoutMixin):
     """A fieldset of the layout with ``"save_button": True`` gets a button
-    that saves only its fields, and answers with the fieldset re-rendered."""
+    that saves only its fields, and answers with the fieldset re-rendered.
+
+    With ``"autosave": True`` it saves itself as its fields change, without
+    a button: what someone else changed in it meanwhile isn't overwritten
+    (the fieldset shows it, saying so). With every editable thing of the
+    page saving itself, the page's "Save" buttons aren't shown."""
 
     fieldset_save_response_template = "admin/fieldsets_extra/fieldset_response.html"
 
@@ -43,7 +55,7 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
             and isinstance(entry, list | tuple)
             and len(entry) == 2
             and isinstance(entry[1], dict)
-            and entry[1].get("save_button")
+            and saves(entry[1])
             for entry in self.fieldsets_with_inlines or ()
         )
 
@@ -81,12 +93,15 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
         if (
             obj is not None
             and obj.pk is not None
-            and entry[1].get("save_button")
+            and saves(entry[1])
             and self.has_change_permission(request, obj)  # type: ignore[attr-defined]
         ):
             save_url = self._fieldset_save_url(obj, index)
         return dataclasses.replace(
-            item, save_url=save_url, save_label=self.get_fieldset_save_label(entry[0])
+            item,
+            save_url=save_url,
+            save_label=self.get_fieldset_save_label(entry[0]),
+            autosave=bool(save_url and entry[1].get("autosave")),
         )
 
     def _fieldset_save_url(self, obj: Any, index: int) -> str | None:
@@ -125,10 +140,9 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
             for entry in self.get_fieldsets_with_inlines(request, obj)
             if not is_inline(entry)
         ]
-        if index >= len(layout_fieldsets) or not layout_fieldsets[index][1].get(
-            "save_button"
-        ):
+        if index >= len(layout_fieldsets) or not saves(layout_fieldsets[index][1]):
             raise Http404("This fieldset has no save button.")
+        autosave = bool(layout_fieldsets[index][1].get("autosave"))
         name, options = django_fieldset(layout_fieldsets[index])
         readonly = list(self.get_readonly_fields(request, obj))  # type: ignore[attr-defined]
         fields = [
@@ -143,7 +157,19 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
         # of the change form is neither submitted nor overwritten.
         form_class = self.get_form(request, obj, change=True, fields=fields)  # type: ignore[attr-defined]
         form = form_class(request.POST, request.FILES, instance=obj)
-        if form.is_valid():
+        response_status = 200
+        if request.POST.get("check") and self._changed_meanwhile(
+            request, form_class, obj
+        ):
+            # Someone else's change isn't overwritten: what's stored now.
+            status = "conflict"
+            text = gettext(
+                "Someone else changed this section meanwhile: this is what's saved now."
+            )
+            non_field_errors = None
+            form = form_class(instance=obj)
+            response_status = 409
+        elif form.is_valid():
             with transaction.atomic(using=router.db_for_write(self.model)):
                 obj = self.save_form(request, form, change=True)  # type: ignore[attr-defined]
                 self.save_model(request, obj, form, change=True)  # type: ignore[attr-defined]
@@ -157,6 +183,8 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
         else:
             status, text = "invalid", gettext("Please correct the errors below.")
             non_field_errors = form.non_field_errors()
+        if autosave and status == "saved":
+            text = gettext("Saved")
 
         adminform = AdminForm(
             form,
@@ -170,6 +198,7 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
             index=index,
             save_url=request.path,
             save_label=self.get_fieldset_save_label(name),
+            autosave=autosave,
         )
         return TemplateResponse(
             request,
@@ -184,4 +213,50 @@ class FieldsetSaveMixin(FieldsetsLayoutMixin):
                 "change": True,
                 "is_popup": False,
             },
+            status=response_status,
         )
+
+    def _changed_meanwhile(
+        self, request: HttpRequest, form_class: type[forms.ModelForm], obj: Any
+    ) -> bool:
+        """Whether what's stored isn't what the page had: its fields'
+        ``previous-<name>`` (none: an unchecked checkbox, an empty
+        multiple select), as they were when it loaded or last saved."""
+        previous = QueryDict(mutable=True)
+        for key, values in request.POST.lists():
+            if key.startswith("previous-"):
+                previous.setlist(key.removeprefix("previous-"), values)
+        return bool(form_class(previous, instance=obj).changed_data)
+
+    def render_change_form(
+        self,
+        request: HttpRequest,
+        context: dict[str, Any],
+        add: bool = False,
+        change: bool = False,
+        form_url: str = "",
+        obj: Any = None,
+    ) -> HttpResponse:
+        # Everything editable saves itself: nothing for the "Save" buttons.
+        if obj is not None and self._everything_saves_itself(request, obj, context):
+            context.update(
+                show_save=False,
+                show_save_and_continue=False,
+                show_save_and_add_another=False,
+                show_save_as_new=False,
+            )
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
+    def _everything_saves_itself(
+        self, request: HttpRequest, obj: Any, context: dict[str, Any]
+    ) -> bool:
+        if not self.uses_fieldset_save or context.get("inline_admin_formsets"):
+            return False
+        readonly = set(self.get_readonly_fields(request, obj))  # type: ignore[attr-defined]
+        editable = [
+            entry
+            for entry in self.get_fieldsets_with_inlines(request, obj)
+            if not is_inline(entry)
+            and set(flatten_fieldsets([django_fieldset(entry)])) - readonly  # type: ignore[list-item]
+        ]
+        return bool(editable) and all(entry[1].get("autosave") for entry in editable)

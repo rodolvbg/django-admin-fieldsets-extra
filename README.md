@@ -135,12 +135,43 @@ fieldset reaches Django (whose `Fieldset` rejects unknown options), so
    has no button (the endpoint answers 404).
 
 The buttons' script and style load only where a fieldset of the layout has
-`"save_button": True` (or the layout is decided per request, by
-`get_fieldsets_with_inlines()`).
+`"save_button": True` or `"autosave": True` (or the layout is decided per
+request, by `get_fieldsets_with_inlines()`).
+
+## A fieldset that saves itself
+
+Add `"autosave": True` instead, and the fieldset saves itself as its
+fields change, without a button: a checkbox or a select at once, a text
+when it's left or on Enter (which then doesn't submit the page). One field
+alone in a fieldset is a field that saves itself:
+
+```python
+("Status", {"fields": ["active", "notes"], "autosave": True}),
+```
+
+![A fieldset that saves itself, just saved](docs/screenshots/autosave-fieldset.png)
+
+It saves as the button does (the same endpoint, the same validation,
+permissions, `save_model()`, history and caveats), and also:
+
+- **What someone else changed meanwhile isn't overwritten.** The page sends
+  what the fieldset had when it loaded (or last saved); if what's stored
+  differs, in any of its fields, nothing is saved: the fieldset shows
+  what's saved now, saying so.
+- **The fieldset being edited stays as it is** (its focus, what's being
+  written): only "Saving…" and "Saved" change under it. Not being edited,
+  it's re-rendered with what was saved. With errors, it's re-rendered with
+  them, the focus where it was.
+- One request at a time per fieldset; what changes meanwhile goes after it.
+- **With everything editable saving itself** (every fieldset with editable
+  fields, and no inlines), the page's "Save" buttons aren't shown; "Delete"
+  and "History" are. Adding an object, there's nothing to save itself yet:
+  the page saves as always.
+- Not on Unfold's tabs (check `E101`), as the button.
 
 `FieldsetsExtraMixin` is two mixins: `FieldsetsLayoutMixin` (inlines
-between fieldsets) and `FieldsetSaveMixin` (the save buttons, over the
-layout). Use the first alone for a layout without buttons.
+between fieldsets) and `FieldsetSaveMixin` (the save buttons and autosave,
+over the layout). Use the first alone for a layout without them.
 
 ## Customizing the template
 

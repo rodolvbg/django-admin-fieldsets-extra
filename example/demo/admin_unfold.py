@@ -28,6 +28,7 @@ class AuthorAdmin(UnfoldFieldsetsExtraMixin, ModelAdmin):
         BookInline,
         ("Contact", {"fields": ["email"], "save_button": True}),
         ArticleInline,
+        ("Status", {"fields": ["active", "notes"], "autosave": True}),
         # Unfold's tabs: rendered together, here.
         ("Phone", {"fields": ["phone"], "classes": ["tab"]}),
         ("Biography", {"fields": ["bio"], "classes": ["tab"]}),

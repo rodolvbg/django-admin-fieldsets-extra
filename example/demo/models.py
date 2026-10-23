@@ -6,6 +6,8 @@ class Author(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     bio = models.TextField(blank=True)
+    active = models.BooleanField(default=True)
+    notes = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.name

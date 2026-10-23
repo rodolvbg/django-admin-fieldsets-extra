@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-admin-fieldsets-extra 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 11:10-0500\n"
+"POT-Creation-Date: 2026-10-23 04:04-0500\n"
 "PO-Revision-Date: 2026-09-29 18:00+0200\n"
 "Last-Translator: Rodolfo Becerra\n"
 "Language-Team: Spanish\n"
@@ -15,26 +15,38 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: mixins.py
+#: save.py
 #, python-format
 msgid "Save %(name)s"
 msgstr "Guardar %(name)s"
 
-#: mixins.py
+#: save.py
 msgid "Save"
 msgstr "Guardar"
 
-#: mixins.py
+#: save.py
+msgid "Someone else changed this section meanwhile: this is what's saved now."
+msgstr "Alguien cambió esta sección mientras tanto: esto es lo que hay guardado ahora."
+
+#: save.py
 msgid "Saved."
 msgstr "Guardado."
 
-#: mixins.py
+#: save.py
 msgid "Please correct the errors below."
 msgstr "Por favor, corrija los errores detallados abajo."
+
+#: save.py
+msgid "Saved"
+msgstr "Guardado"
 
 #: templates/admin/fieldsets_extra/includes/fieldset.html
 msgid "The changes could not be saved. Please try again."
 msgstr "No se pudieron guardar los cambios. Inténtalo de nuevo."
+
+#: templates/admin/fieldsets_extra/includes/fieldset.html
+msgid "Saving…"
+msgstr "Guardando…"
 
 #: templates/admin/fieldsets_extra/includes/fieldset.html
 msgid ""

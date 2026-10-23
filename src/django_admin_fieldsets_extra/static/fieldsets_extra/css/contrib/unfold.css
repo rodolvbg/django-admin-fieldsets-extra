@@ -43,3 +43,16 @@
 .dark .fieldset-save-bar .button:hover {
     background: var(--color-base-800);
 }
+
+.fieldset-autosave > .fieldset-save-bar {
+    margin-top: -0.5rem;
+    min-height: 1.25rem;
+}
+
+.fieldset-with-save {
+    --message-success-fg: var(--color-green-600);
+}
+
+.dark .fieldset-with-save {
+    --message-success-fg: var(--color-green-500);
+}

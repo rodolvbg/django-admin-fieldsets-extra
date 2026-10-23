@@ -24,7 +24,7 @@ def is_inline(entry: object) -> TypeIs[type[InlineModelAdmin]]:
 
 #: Fieldset options of this package; removed before Django sees them (its
 #: ``Fieldset`` rejects unknown options).
-LAYOUT_OPTIONS = frozenset({"save_button"})
+LAYOUT_OPTIONS = frozenset({"save_button", "autosave"})
 
 
 def django_fieldset(
@@ -59,9 +59,12 @@ class LayoutItem:
     #: Position of the fieldset in ``get_fieldsets()`` (its id suffix).
     index: int | None = None
     inline_admin_formset: InlineAdminFormSet | None = None
-    #: Endpoint of the fieldset's save button, if it has one.
+    #: Endpoint of the fieldset's save button (or of its autosave), if it
+    #: has one.
     save_url: str | None = None
     save_label: str = ""
+    #: It saves itself as its fields change: no button.
+    autosave: bool = False
 
     @property
     def is_inline(self) -> bool:

@@ -81,12 +81,15 @@ class UnfoldFieldsetsExtraMixin(FieldsetsExtraMixin):
                 and isinstance(entry[1], Mapping)
             ):
                 continue
-            if entry[1].get("save_button") and is_tab(entry[1]):
+            option = next(
+                (o for o in ("save_button", "autosave") if entry[1].get(o)), None
+            )
+            if option and is_tab(entry[1]):
                 errors.append(
                     checks.Error(
                         f"'{type(self).__qualname__}.fieldsets_with_inlines"
                         f"[{index}]' is one of Unfold's tabs, which can't have "
-                        "a 'save_button'.",
+                        f"a '{option}'.",
                         obj=type(self),
                         id="admin_fieldsets_extra.E101",
                     )

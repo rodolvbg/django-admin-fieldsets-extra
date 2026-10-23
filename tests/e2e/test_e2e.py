@@ -95,3 +95,39 @@ def test_collapsed_fieldset_hides_its_save_button(change_page: Page):
     expect(button).to_be_hidden()
     page.click("#fieldset-0-2-heading")
     expect(button).to_be_visible()
+
+
+def test_a_fieldset_that_saves_itself(change_page: Page, author):
+    """The demo's "Status" (active, notes): no button; saved as it changes,
+    the rest of the page left as it is."""
+    page = change_page
+    page.evaluate("window.__noReload = true")
+    status_box = page.locator("#fieldset-3-container")
+    expect(status_box.locator("[data-fieldset-save]")).to_have_count(0)
+    status = status_box.locator(".fieldset-save-status")
+
+    page.fill("#id_name", "Parent not saved")
+    page.uncheck("#id_active")
+    expect(status).to_have_text("Saved")
+    author.refresh_from_db()
+    assert author.active is False
+
+    notes = page.locator("#id_notes")
+    notes.fill("Call on Monday")
+    notes.press("Enter")  # Saves it, doesn't submit the page.
+    expect(status).to_have_text("Saved")
+    author.refresh_from_db()
+    assert author.notes == "Call on Monday"
+
+    # Someone else changes it meanwhile: not overwritten, and shown.
+    Author.objects.filter(pk=author.pk).update(notes="Theirs")
+    notes.fill("Mine")
+    notes.press("Tab")
+    expect(status).to_contain_text("Someone else changed this section")
+    expect(page.locator("#id_notes")).to_have_value("Theirs")
+    author.refresh_from_db()
+    assert author.notes == "Theirs"
+
+    assert page.evaluate("window.__noReload") is True
+    assert page.input_value("#id_name") == "Parent not saved"
+    assert author.name == "Author"

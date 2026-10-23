@@ -48,3 +48,19 @@
     opacity: 0.6;
     transition: opacity 0.2s;
 }
+
+/* A fieldset that saves itself: no button, only what it says ("Saving…",
+   "Saved", an error), in a line under it. */
+.fieldset-autosave > .fieldset-save-bar {
+    min-height: 1.25rem;
+    padding: 2px 10px;
+    border-top: none;
+}
+
+.fieldset-save-status-saved {
+    color: var(--message-success-fg, #2e7d32);
+}
+
+.fieldset-save-status-conflict {
+    color: var(--error-fg, #ba2121);
+}

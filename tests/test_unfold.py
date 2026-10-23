@@ -91,6 +91,12 @@ class TestUnfoldChecks(SimpleTestCase):
 
         assert "admin_fieldsets_extra.E101" in ids
 
+    def test_a_tab_cannot_save_itself_either(self):
+        tab = ("Bio", {"fields": ["bio"], "classes": ["tab"], "autosave": True})
+        errors = make_admin([(None, {"fields": ["name"]}), tab]).check()
+        [error] = [e for e in errors if e.id == "admin_fieldsets_extra.E101"]
+        assert "'autosave'" in error.msg
+
     def test_checks_skip_what_other_checks_report(self):
         assert make_admin("nope").check()[0].id == "admin_fieldsets_extra.E001"
         ids = [error.id for error in make_admin([("x",)]).check()]

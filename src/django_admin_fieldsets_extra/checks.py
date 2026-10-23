@@ -40,13 +40,13 @@ def check_fieldsets_with_inlines(model_admin: Any) -> list[checks.CheckMessage]:
                 "admin_fieldsets_extra.E002",
             )
             continue
-        save_button = entry[1].get("save_button", False)
-        if not isinstance(save_button, bool):
-            error(
-                f"'save_button' in '{name}.fieldsets_with_inlines[{index}]' must "
-                "be True or False.",
-                "admin_fieldsets_extra.E004",
-            )
+        for option, code in (("save_button", "E004"), ("autosave", "E005")):
+            if not isinstance(entry[1].get(option, False), bool):
+                error(
+                    f"'{option}' in '{name}.fieldsets_with_inlines[{index}]' "
+                    "must be True or False.",
+                    f"admin_fieldsets_extra.{code}",
+                )
 
     from django_admin_fieldsets_extra.mixins import FieldsetsExtraMixin
 

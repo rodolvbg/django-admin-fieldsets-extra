@@ -27,4 +27,6 @@ class AuthorAdmin(FieldsetsExtraMixin, admin.ModelAdmin):
             "Biography",
             {"fields": ["bio"], "classes": ["collapse"], "save_button": True},
         ),
+        # Saves itself as its fields change: no button.
+        ("Status", {"fields": ["active", "notes"], "autosave": True}),
     ]
