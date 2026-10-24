@@ -4,7 +4,7 @@ requires = [ "hatch-fancy-pypi-readme", "hatchling" ]
 
 [project]
 name = "django-admin-fieldsets-extra"
-version = "0.1.1"
+version = "0.1.2"
 description = "Extras for Django admin fieldsets: interleave them with inlines, save one on its own."
 keywords = [ "admin", "django", "fieldsets", "inlines", "layout" ]
 license = "MIT"
